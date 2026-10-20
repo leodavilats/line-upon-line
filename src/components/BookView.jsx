@@ -14,11 +14,17 @@ import {
 } from '../lib/layout.js'
 import { formatShare } from '../lib/xrefs.js'
 
-const LEFT_PAGE = 'M 800 74 C 640 50, 260 52, 44 68 L 44 792 C 260 780, 640 778, 800 800 Z'
-const RIGHT_PAGE = 'M 800 74 C 960 50, 1340 52, 1556 68 L 1556 792 C 1340 780, 960 778, 800 800 Z'
+// As páginas sobem em direção à lombada e mergulham na dobra, como num livro aberto de verdade.
+const LEFT_PAGE =
+  'M 800 86 C 788 62, 730 52, 640 52 C 460 54, 240 60, 44 70 L 44 792 C 240 786, 460 784, 640 786 C 730 788, 788 792, 800 808 Z'
+const RIGHT_PAGE =
+  'M 800 86 C 812 62, 870 52, 960 52 C 1140 54, 1360 60, 1556 70 L 1556 792 C 1360 786, 1140 784, 960 786 C 870 788, 812 792, 800 808 Z'
+// Fita marcadora: sai da dobra, passa sobre a capa e pende abaixo do livro.
+const RIBBON = 'M 795 800 C 797 826, 806 846, 818 872 L 816 878 L 810 870 L 803 880 C 790 852, 784 828, 783 800 Z'
 
 // Cor por recorte (testamentos). Também usadas na legenda da barra lateral.
-export const SCOPE_COLORS = { AT: '#7a5530', cross: '#8a2f3c', NT: '#245f73' }
+// O vinho (entre os testamentos) é o destaque; o ocre dentro do AT recua para o fundo.
+export const SCOPE_COLORS = { AT: '#a08560', cross: '#962638', NT: '#245f73' }
 const GHOST_COLOR = '#8a7458'
 const NO_PRIORITY = new Set()
 
@@ -322,20 +328,39 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
                 <stop offset="0.86" stopColor="#f8f0dd" />
                 <stop offset="1" stopColor="#d3bd92" />
               </linearGradient>
+              {/* Sombra da dobra: a luz não alcança o fundo da calha. */}
+              <linearGradient id="gutter" gradientUnits="userSpaceOnUse" x1="600" y1="0" x2="1000" y2="0">
+                <stop offset="0" stopColor="#4a2c14" stopOpacity="0" />
+                <stop offset="0.3" stopColor="#4a2c14" stopOpacity="0.05" />
+                <stop offset="0.44" stopColor="#4a2c14" stopOpacity="0.2" />
+                <stop offset="0.5" stopColor="#4a2c14" stopOpacity="0.42" />
+                <stop offset="0.56" stopColor="#4a2c14" stopOpacity="0.2" />
+                <stop offset="0.7" stopColor="#4a2c14" stopOpacity="0.05" />
+                <stop offset="1" stopColor="#4a2c14" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#5e1018" />
+                <stop offset="0.5" stopColor="#8e1d27" />
+                <stop offset="1" stopColor="#6a141c" />
+              </linearGradient>
             </defs>
 
             <rect x="20" y="40" width="1560" height="786" rx="20" fill="url(#leather)" />
-            {[3, 2, 1].map((i) => (
-              <g key={i} transform={`translate(0 ${i * 2.6})`} className="page-edge">
-                <path d={LEFT_PAGE} />
-                <path d={RIGHT_PAGE} />
+            <rect x="30" y="50" width="1540" height="766" rx="13" className="cover-tooling" />
+            {/* Espessura do miolo: folhas empilhadas para fora e para baixo, com corte dourado. */}
+            {[5, 4, 3, 2, 1].map((i) => (
+              <g key={i} className={`page-edge ${i % 2 ? '' : 'alt'}`}>
+                <path d={LEFT_PAGE} transform={`translate(${-i * 2} ${i * 1.5})`} />
+                <path d={RIGHT_PAGE} transform={`translate(${i * 2} ${i * 1.5})`} />
               </g>
             ))}
+            <path d={RIBBON} fill="url(#ribbon)" className="ribbon" />
             <g onClick={onPageClick}>
               <path d={LEFT_PAGE} fill="url(#page-left)" />
               <path d={RIGHT_PAGE} fill="url(#page-right)" />
               <path d={TEXT_LINES} className="text-lines" />
-              <line x1="800" y1="74" x2="800" y2="800" className="spine" />
+              <path d={`${LEFT_PAGE} ${RIGHT_PAGE}`} fill="url(#gutter)" />
+              <path d="M 800 86 V 808" className="spine" />
             </g>
 
             <line x1="80" y1={BASELINE} x2="780" y2={BASELINE} className="baseline" />
@@ -418,8 +443,6 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
 
           {/* Camada 3: destaques */}
           <svg className="book-svg book-fg" viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`} aria-hidden="true">
-            {/* Fita marcadora sobre a lombada (x = 800). */}
-            <path d="M 792 46 h 16 v 786 l -8 -10 l -8 10 Z" className="ribbon" />
             {spotItems.map((item) => (
               <path
                 key={item.key}

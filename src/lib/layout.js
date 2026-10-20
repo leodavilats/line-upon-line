@@ -1,8 +1,8 @@
 import { BOOKS, BOOK_BY_ID } from '../data/books.js'
 import VERSE_COUNTS from '../data/verseCounts.json'
 
-// Área visível do desenho: só o livro (capa em x 20–1580, y 40–826), sem margens vazias.
-export const VIEW = { x: 14, y: 34, w: 1572, h: 800 }
+// Área visível do desenho: só o livro (capa em x 20–1580, y 40–826) e a fita que pende abaixo dele.
+export const VIEW = { x: 14, y: 34, w: 1572, h: 850 }
 export const BASELINE = 690
 const PAGES = { AT: [90, 770], NT: [830, 1510] }
 const FOCUS_SHARE = 0.55

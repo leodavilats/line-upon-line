@@ -191,8 +191,6 @@ a { color: var(--gold); }
 .sidebar-head h2 { margin: 0; font-family: var(--serif-display); font-size: 1.35rem; font-weight: 600; color: var(--gold-soft); }
 .sidebar-body { flex: 1; overflow-y: auto; padding: 0 20px 12px; }
 .sidebar-foot { padding: 12px 20px 16px; border-top: 1px solid var(--line); }
-.sidebar-foot p { margin: 10px 0 0; font-size: 0.78rem; color: var(--text-faint); }
-.sidebar-foot .credit { margin-top: 4px; color: var(--text-soft); }
 
 .fsection { padding: 16px 0; border-bottom: 1px solid var(--line); }
 .fsection:last-child { border-bottom: 0; }
@@ -397,14 +395,14 @@ a { color: var(--gold); }
 .book { position: relative; margin-top: 12px; }
 .book-layers {
   position: relative;
-  /* Cabe na altura da tela (proporção do desenho: VIEW em layout.js, 1572 × 800). */
-  max-width: calc((100vh - var(--topbar-h) - 150px) * 1.965);
+  /* Cabe na altura da tela (proporção do desenho: VIEW em layout.js, 1572 × 850). */
+  max-width: calc((100vh - var(--topbar-h) - 150px) * 1.849);
   min-width: 0;
   margin: 0 auto;
   transition: max-width 0.3s ease;
 }
 /* Sem a barra lateral, o livro ocupa quase toda a altura útil (a legenda pode ficar logo abaixo da dobra). */
-.app:not(.sidebar-open) .book-layers { max-width: calc((100vh - var(--topbar-h) - 64px) * 1.965); }
+.app:not(.sidebar-open) .book-layers { max-width: calc((100vh - var(--topbar-h) - 64px) * 1.849); }
 .book-svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.5)); }
 .xref-canvas, .book-fg {
   position: absolute;
@@ -418,10 +416,12 @@ a { color: var(--gold); }
 .xref-canvas.dimmed { opacity: 0.22; }
 .book-layers.pointing { cursor: pointer; }
 
-.page-edge path { fill: #d9c7a0; stroke: #b49b6c; stroke-width: 0.6; }
+.cover-tooling { fill: none; stroke: var(--gold); stroke-width: 1.2; opacity: 0.35; }
+.page-edge path { fill: #d8b768; stroke: #a5803a; stroke-width: 0.5; }
+.page-edge.alt path { fill: #e6cd8c; }
 .text-lines { stroke: var(--ink); stroke-width: 1.4; opacity: 0.04; }
-.spine { stroke: rgba(80, 50, 25, 0.3); stroke-width: 1.2; }
-.ribbon { fill: #7d1b1b; opacity: 0.9; }
+.spine { stroke: rgba(70, 40, 18, 0.45); stroke-width: 1.2; }
+.ribbon { filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35)); }
 .baseline { stroke: var(--ink-soft); stroke-width: 0.8; opacity: 0.5; }
 
 .book-hit { cursor: pointer; }
@@ -451,13 +451,13 @@ a { color: var(--gold); }
 }
 .testament-label {
   font-family: var(--serif-display);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   text-anchor: middle;
-  fill: var(--ink-soft);
-  opacity: 0.7;
+  fill: var(--ink);
+  opacity: 0.85;
 }
 
 .spot-arc { fill: none; opacity: 0.85; stroke-linecap: round; }
@@ -530,6 +530,17 @@ a { color: var(--gold); }
 .legend-colors span { display: inline-flex; align-items: center; gap: 6px; color: var(--text-soft); }
 .legend-colors i { width: 18px; height: 4px; border-radius: 2px; }
 .legend-hint { font-style: italic; }
+
+.site-foot {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+.site-foot p { margin: 0; }
+.site-foot .credit { margin-top: 4px; color: var(--text-soft); }
 
 /* ───── Painel do capítulo ───── */
 .panel {

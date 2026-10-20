@@ -354,6 +354,17 @@ export default function App() {
                   : 'Espessura = nº de referências · passe o cursor sobre um livro para isolar suas ligações · clique para abrir'}
             </span>
           </div>
+
+          <footer className="site-foot">
+            <p>
+              Referências:{' '}
+              <a href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noreferrer">
+                OpenBible.info
+              </a>{' '}
+              (CC-BY) · Texto: Almeida, domínio público · <a href="/privacidade">Privacidade</a>
+            </p>
+            <p className="credit">Desenvolvido por Leonardo D'avila</p>
+          </footer>
         </main>
       </div>
 

@@ -205,14 +205,6 @@ export default function Sidebar({ open, filters, setFilters, data, scopeCounts, 
         <button className="btn btn-ghost" onClick={onReset}>
           Restaurar padrão
         </button>
-        <p>
-          Referências:{' '}
-          <a href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noreferrer">
-            OpenBible.info
-          </a>{' '}
-          (CC-BY). Texto: Almeida, domínio público. <a href="/privacidade">Privacidade</a>
-        </p>
-        <p className="credit">Desenvolvido por Leonardo D'avila (@oleodavila)</p>
       </div>
     </aside>
   )
