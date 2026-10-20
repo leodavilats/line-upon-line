@@ -55,6 +55,40 @@ const TOUR_STEPS = [
   },
 ]
 
+// Em telas pequenas, recomenda o computador (o livro com todas as linhas fica bem mais legível).
+// Some ao fechar e não volta nesta aba.
+function DesktopTip() {
+  const [hidden, setHidden] = useState(() => {
+    try {
+      return sessionStorage.getItem('lsl-desktop-tip') === 'off'
+    } catch {
+      return false
+    }
+  })
+  if (hidden) return null
+  return (
+    <div className="desktop-tip" role="note">
+      <span aria-hidden="true">🖥</span>
+      <p>
+        <strong>Melhor no computador.</strong> Numa tela maior, o livro aberto e as ligações entre as passagens ficam muito
+        mais fáceis de ver e de clicar.
+      </p>
+      <button
+        className="icon-btn"
+        aria-label="Fechar recomendação"
+        onClick={() => {
+          setHidden(true)
+          try {
+            sessionStorage.setItem('lsl-desktop-tip', 'off')
+          } catch {}
+        }}
+      >
+        ✕
+      </button>
+    </div>
+  )
+}
+
 function ActiveChips({ filters, setFilters, tiers, onReset }) {
   const set = (patch) => setFilters((f) => ({ ...f, ...patch }))
   const chips = []
@@ -255,6 +289,7 @@ export default function App() {
         {sidebarOpen && <div className="scrim" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
 
         <main className="main">
+          <DesktopTip />
           <div className="main-head">
             <nav className="crumbs" aria-label="Nível de zoom">
               <button onClick={() => setFocus(null)} disabled={!focus}>

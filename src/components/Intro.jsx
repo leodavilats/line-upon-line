@@ -51,6 +51,10 @@ export function WelcomeModal({ onStartTour, onClose }) {
           A Escritura explica a própria Escritura. Este mapa desenha as referências cruzadas da Bíblia, cerca de 345 mil
           ligações entre passagens que tratam do mesmo tema, como arcos entre as páginas de uma Bíblia aberta.
         </p>
+        <p className="modal-desktop-tip">
+          <strong>Dica:</strong> para a melhor experiência, acesse pelo computador. Numa tela maior, o livro e as ligações
+          ficam muito mais fáceis de ver e de clicar.
+        </p>
         <ul className="features">
           <li>
             <strong>Do panorama ao versículo</strong>

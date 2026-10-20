@@ -711,6 +711,9 @@ a { color: var(--gold); }
 .tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--paper-edge); }
 .tour-dots i.on { background: var(--accent); }
 
+/* Recomendação de computador: só aparece em telas pequenas */
+.desktop-tip, .modal-desktop-tip { display: none; }
+
 /* ───── Telas menores ───── */
 @media (max-width: 899px) {
   :root { --topbar-h: 104px; }
@@ -719,6 +722,31 @@ a { color: var(--gold); }
   .searchbox { order: 3; width: 100%; margin-left: 0; }
   .filters-toggle { order: 2; margin-left: auto; }
   .help-btn { order: 2; }
+  .desktop-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line-strong);
+    background: rgba(201, 162, 74, 0.1);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .desktop-tip p { margin: 0; flex: 1; color: var(--text-soft); }
+  .desktop-tip strong { color: var(--gold-soft); }
+  .desktop-tip .icon-btn { width: 28px; height: 28px; font-size: 0.8rem; }
+  .modal-desktop-tip {
+    display: block;
+    margin: -6px 0 16px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(138, 47, 60, 0.08);
+    border-left: 3px solid var(--accent);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
   .modal { padding: 24px 20px 18px; }
   .modal h2 { font-size: 1.9rem; }
   .sidebar {
