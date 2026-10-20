@@ -1,16 +1,47 @@
+/* Tema claro (pergaminho) é o padrão; o escuro (nogueira) vem de data-theme="dark" no <html>,
+   escolhido pelo botão do topo ou, sem escolha salva, pela preferência do sistema (index.html). */
 :root {
-  --bg: #1a110c;
-  --bg-2: #2a1b13;
-  --surface: #221710;
-  --line: rgba(201, 162, 74, 0.16);
+  --bg: #e9dec6;
+  --bg-glow: #f7f0e1;
+  --surface: #f2e9d6;
+  --topbar-bg: rgba(242, 233, 214, 0.92);
+  --line: rgba(120, 88, 40, 0.2);
+  --line-strong: rgba(120, 88, 40, 0.42);
+  --text: #33241a;
+  --text-soft: rgba(51, 36, 26, 0.78);
+  --text-faint: rgba(51, 36, 26, 0.6);
+  --gold: #9a7329;
+  --gold-soft: #74531a;
+  --wash: rgba(255, 255, 255, 0.5);
+  --wash-strong: rgba(255, 255, 255, 0.8);
+  --track: rgba(80, 55, 25, 0.16);
+  --shadow: rgba(70, 45, 20, 0.28);
+  color-scheme: light;
+}
+/* O balão do cursor e o cartão de toque são escuros nos dois temas. */
+:root[data-theme='dark'],
+.tooltip,
+.tap-card {
+  --bg: #2f2219;
+  --bg-glow: #4d3627;
+  --surface: #35271d;
+  --topbar-bg: rgba(47, 34, 25, 0.9);
+  --line: rgba(201, 162, 74, 0.22);
   --line-strong: rgba(201, 162, 74, 0.38);
   --text: #f1e6cf;
-  --text-soft: rgba(241, 230, 207, 0.66);
-  --text-faint: rgba(241, 230, 207, 0.42);
+  --text-soft: rgba(241, 230, 207, 0.78);
+  --text-faint: rgba(241, 230, 207, 0.56);
   --gold: #c9a24a;
   --gold-soft: #e7d29a;
+  --wash: rgba(255, 255, 255, 0.05);
+  --wash-strong: rgba(255, 255, 255, 0.08);
+  --track: rgba(255, 255, 255, 0.12);
+  --shadow: rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+.tooltip, .tap-card { color: var(--text); }
+:root {
   --paper: #f7eedb;
-  --paper-2: #efe2c3;
   --paper-edge: #cdb78b;
   --ink: #33241a;
   --ink-soft: #6c5842;
@@ -26,7 +57,7 @@
 html, body { margin: 0; }
 body {
   min-height: 100vh;
-  background: radial-gradient(ellipse at 55% 0%, #3a2418 0%, var(--bg) 62%) fixed, var(--bg);
+  background: radial-gradient(ellipse at 55% 0%, var(--bg-glow) 0%, var(--bg) 65%) fixed, var(--bg);
   color: var(--text);
   font-family: var(--serif);
   font-size: 16.5px;
@@ -86,7 +117,7 @@ a { color: var(--gold); }
   align-items: center;
   gap: 20px;
   padding: 0 24px;
-  background: rgba(26, 17, 12, 0.88);
+  background: var(--topbar-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
@@ -134,11 +165,11 @@ a { color: var(--gold); }
   padding: 9px 14px 9px 36px;
   border-radius: 999px;
   border: 1px solid var(--line-strong);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--wash);
   outline: none;
 }
 .searchbox input::placeholder { color: var(--text-faint); font-style: italic; }
-.searchbox input:focus { border-color: var(--gold); background: rgba(255, 255, 255, 0.08); }
+.searchbox input:focus { border-color: var(--gold); background: var(--wash-strong); }
 .search-options {
   position: absolute;
   top: calc(100% + 6px);
@@ -151,7 +182,7 @@ a { color: var(--gold); }
   background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--paper-edge);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 16px 40px var(--shadow);
 }
 .search-options button {
   width: 100%;
@@ -217,7 +248,7 @@ a { color: var(--gold); }
   height: 6px;
   margin: 8px 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--gold) var(--fill), rgba(255, 255, 255, 0.12) var(--fill));
+  background: linear-gradient(90deg, var(--gold) var(--fill), var(--track) var(--fill));
   cursor: pointer;
 }
 .strength-range::-webkit-slider-thumb {
@@ -259,7 +290,7 @@ a { color: var(--gold); }
   opacity: 0.5;
   transition: opacity 0.15s, background 0.15s;
 }
-.scope-row:hover { background: rgba(255, 255, 255, 0.04); }
+.scope-row:hover { background: var(--wash); }
 .scope-row.on { opacity: 1; }
 .scope-row input { accent-color: var(--gold); margin: 0; }
 .swatch { width: 22px; height: 4px; border-radius: 2px; }
@@ -286,7 +317,7 @@ a { color: var(--gold); }
   padding: 3px 9px;
   border-radius: 6px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--wash);
   font-size: 0.8rem;
   color: var(--text-soft);
   cursor: pointer;
@@ -301,7 +332,7 @@ a { color: var(--gold); }
   padding: 7px 8px;
   border-radius: 8px;
   border: 1px solid var(--line-strong);
-  background: var(--bg-2);
+  background: var(--surface);
 }
 .nav-fields select:disabled { opacity: 0.4; }
 
@@ -403,7 +434,7 @@ a { color: var(--gold); }
 }
 /* Sem a barra lateral, o livro ocupa quase toda a altura útil (a legenda pode ficar logo abaixo da dobra). */
 .app:not(.sidebar-open) .book-layers { max-width: calc((100vh - var(--topbar-h) - 64px) * 1.849); }
-.book-svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.5)); }
+.book-svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 24px 34px var(--shadow)); }
 .xref-canvas, .book-fg {
   position: absolute;
   inset: 0;
@@ -543,6 +574,8 @@ a { color: var(--gold); }
 .site-foot .credit { margin-top: 4px; color: var(--text-soft); }
 
 /* ───── Painel do capítulo ───── */
+/* Painel, modal e tour são sempre papel: controles nativos claros, mesmo no tema escuro. */
+.panel, .modal, .tour-balloon { color-scheme: light; }
 .panel {
   position: fixed;
   z-index: 20;
@@ -555,7 +588,7 @@ a { color: var(--gold); }
   background: linear-gradient(180deg, #f8f0de 0%, #f0e4c8 100%);
   color: var(--ink);
   border-left: 1px solid var(--paper-edge);
-  box-shadow: -18px 0 40px rgba(0, 0, 0, 0.4);
+  box-shadow: -18px 0 40px var(--shadow);
   animation: panel-in 0.3s cubic-bezier(0.3, 0, 0.2, 1);
 }
 @keyframes panel-in { from { transform: translateX(40px); opacity: 0; } }
@@ -651,7 +684,7 @@ a { color: var(--gold); }
 .ad-chapter .ad-label { color: var(--ink-soft); opacity: 0.7; }
 
 /* ───── Ajuda, boas-vindas e tour ───── */
-.help-btn { color: var(--gold-soft); border-color: var(--line-strong); font-family: var(--serif-display); font-weight: 700; font-size: 1.05rem; }
+.help-btn, .theme-btn { color: var(--gold-soft); border-color: var(--line-strong); font-family: var(--serif-display); font-weight: 700; font-size: 1.05rem; }
 
 .modal-backdrop {
   position: fixed;
@@ -773,11 +806,16 @@ a { color: var(--gold); }
 /* ───── Telas menores ───── */
 @media (max-width: 899px) {
   :root { --topbar-h: 104px; }
-  .topbar { flex-wrap: wrap; align-content: center; gap: 10px 12px; padding: 10px 16px; }
+  .topbar { flex-wrap: wrap; align-content: center; gap: 10px 8px; padding: 10px 16px; }
+  /* Marca, Filtros, tema e ajuda precisam caber numa linha só em ~360px. */
+  .brand { flex: 1 1 0; }
+  .brand h1 { font-size: 1.35rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .filters-toggle { padding: 6px 11px; }
+  .topbar .icon-btn { width: 32px; height: 32px; }
   .brand p { display: none; }
   .searchbox { order: 3; width: 100%; margin-left: 0; }
   .filters-toggle { order: 2; margin-left: auto; }
-  .help-btn { order: 2; }
+  .help-btn, .theme-btn { order: 2; }
   .desktop-tip {
     display: flex;
     align-items: flex-start;
@@ -812,11 +850,11 @@ a { color: var(--gold); }
     bottom: 0;
     height: auto;
     top: var(--topbar-h);
-    box-shadow: 18px 0 40px rgba(0, 0, 0, 0.45);
+    box-shadow: 18px 0 40px var(--shadow);
   }
   .sidebar.open { width: min(var(--sidebar-w), 88vw); }
   .sidebar > * { width: min(var(--sidebar-w), 88vw); }
-  .scrim { display: block; position: fixed; inset: var(--topbar-h) 0 0 0; z-index: 24; background: rgba(0, 0, 0, 0.45); }
+  .scrim { display: block; position: fixed; inset: var(--topbar-h) 0 0 0; z-index: 24; background: var(--shadow); }
   .main { padding: 12px 16px 24px; }
   /* O livro inteiro cabe na largura: os dois testamentos à vista; a pinça dá o zoom. */
   .book-layers { max-width: none; }

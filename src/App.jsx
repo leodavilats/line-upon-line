@@ -152,6 +152,18 @@ export default function App() {
     if (intro === 'welcome') markIntroShown()
   }, [intro])
 
+  // O tema inicial vem do index.html (escolha salva ou preferência do sistema).
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme || 'light')
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = next
+    document.querySelector('meta[name=theme-color]')?.setAttribute('content', next === 'dark' ? '#2f2219' : '#e9dec6')
+    try {
+      localStorage.setItem('lsl-theme', next)
+    } catch {}
+    setTheme(next)
+  }
+
   const focus = filters.focus
   const chapter = focus && nav.book === focus ? nav.chapter : null
 
@@ -271,6 +283,14 @@ export default function App() {
           <p>As referências cruzadas das Escrituras</p>
         </div>
         <SearchBox onNavigate={navigate} />
+        <button
+          className="icon-btn theme-btn"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'}
+          title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+        >
+          <span aria-hidden="true">{theme === 'dark' ? '☀' : '☾'}</span>
+        </button>
         <button className="icon-btn help-btn" onClick={() => setIntro('welcome')} aria-label="Sobre o projeto e tutorial" title="Sobre e tutorial">
           ?
         </button>
