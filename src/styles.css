@@ -622,6 +622,23 @@ a { color: var(--gold); }
   color: var(--ink-soft);
 }
 
+/* ───── Publicidade (AdSense) ───── */
+/* Largura fixa: o bloco não se redimensiona enquanto a barra lateral abre ou fecha. */
+.ad-slot { display: block; margin: 20px 0 4px; }
+.ad-slot .adsbygoogle { display: block; min-height: 100px; }
+.ad-slot:has(.adsbygoogle[data-ad-status='unfilled']) { display: none; }
+.ad-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.ad-sidebar { width: calc(var(--sidebar-w) - 40px); }
+.ad-chapter { padding-top: 14px; border-top: 1px solid var(--paper-edge); }
+.ad-chapter .ad-label { color: var(--ink-soft); opacity: 0.7; }
+
 /* ───── Ajuda, boas-vindas e tour ───── */
 .help-btn { color: var(--gold-soft); border-color: var(--line-strong); font-family: var(--serif-display); font-weight: 700; font-size: 1.05rem; }
 

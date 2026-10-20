@@ -5,8 +5,9 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
-      // Duas páginas: o app (index.html) e o painel administrativo (console.html, servido em /console).
-      input: { main: 'index.html', console: 'console.html' },
+      // O app (index.html), o painel administrativo (console.html, servido em /console)
+      // e a política de privacidade (privacidade.html, servida em /privacidade).
+      input: { main: 'index.html', console: 'console.html', privacidade: 'privacidade.html' },
     },
   },
   server: {

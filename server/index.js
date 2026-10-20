@@ -20,6 +20,10 @@ trackRoutes(app)
 consoleRoutes(app)
 app.use('/api', (_req, res) => res.status(404).json({ error: 'não encontrado' }))
 
+app.get(['/privacidade', '/privacidade/'], (_req, res) => {
+  res.set('Cache-Control', 'no-cache').sendFile('privacidade.html', { root: DIST })
+})
+
 app.get(['/console', '/console/'], (_req, res) => {
   res.set('Cache-Control', 'no-store').sendFile('console.html', { root: DIST })
 })

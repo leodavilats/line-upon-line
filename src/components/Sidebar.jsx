@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BOOKS, BOOK_BY_ID } from '../data/books.js'
 import { GROUPS, PRESETS, SCOPES, formatShare } from '../lib/xrefs.js'
+import AdSlot from './AdSlot.jsx'
 import { SCOPE_COLORS } from './BookView.jsx'
 
 const fmt = (n) => n.toLocaleString('pt-BR')
@@ -196,6 +197,8 @@ export default function Sidebar({ open, filters, setFilters, data, scopeCounts, 
             </div>
           )}
         </section>
+
+        <AdSlot slot={import.meta.env.VITE_ADSENSE_SLOT_SIDEBAR} className="ad-sidebar" />
       </div>
 
       <div className="sidebar-foot">
@@ -207,7 +210,7 @@ export default function Sidebar({ open, filters, setFilters, data, scopeCounts, 
           <a href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noreferrer">
             OpenBible.info
           </a>{' '}
-          (CC-BY). Texto: Almeida, domínio público.
+          (CC-BY). Texto: Almeida, domínio público. <a href="/privacidade">Privacidade</a>
         </p>
         <p className="credit">Desenvolvido por Leonardo D'avila (@oleodavila)</p>
       </div>

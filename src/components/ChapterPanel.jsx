@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BOOKS, BOOK_BY_ID } from '../data/books.js'
 import { useChapterText } from '../lib/data.js'
 import { chapterRefs, formatShare, refKey, scopeOf } from '../lib/xrefs.js'
+import AdSlot from './AdSlot.jsx'
 import { SCOPE_COLORS, fmtRef } from './BookView.jsx'
 
 const PREVIEW = 4
@@ -162,6 +163,9 @@ export default function ChapterPanel({
             />
           )
         })}
+        {verses.length > 0 && (
+          <AdSlot key={`${focus}-${chapter}`} slot={import.meta.env.VITE_ADSENSE_SLOT_CHAPTER} className="ad-chapter" />
+        )}
       </div>
 
       <footer className="panel-nav">
