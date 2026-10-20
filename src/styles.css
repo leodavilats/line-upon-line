@@ -739,8 +739,36 @@ a { color: var(--gold); }
 .tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--paper-edge); }
 .tour-dots i.on { background: var(--accent); }
 
-/* Recomendação de computador: só aparece em telas pequenas */
-.desktop-tip, .modal-desktop-tip { display: none; }
+/* Dica de toque e recomendação de computador: só aparecem em telas pequenas */
+.desktop-tip, .modal-desktop-tip, .sheet-handle { display: none; }
+
+/* Cartão da seleção por toque (substitui o balão do cursor) */
+.tap-card {
+  position: fixed;
+  z-index: 15;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(440px, calc(100vw - 24px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 14px;
+  background: rgba(26, 17, 12, 0.96);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: tap-card-in 0.2s ease-out;
+}
+@keyframes tap-card-in { from { transform: translate(-50%, 12px); opacity: 0; } }
+.tap-card-text { flex: 1; min-width: 0; display: grid; font-size: 0.86rem; color: var(--text-soft); }
+.tap-card-text strong { font-family: var(--serif-display); font-size: 1.15rem; color: var(--gold-soft); }
+.tap-card .icon-btn { width: 30px; height: 30px; font-size: 0.8rem; }
+
+@media (pointer: coarse) {
+  /* Arrasto horizontal fica com o livro (percorrer os livros); vertical e pinça continuam com a página. */
+  .book-layers { touch-action: pan-y pinch-zoom; }
+}
 
 /* ───── Telas menores ───── */
 @media (max-width: 899px) {
@@ -755,12 +783,12 @@ a { color: var(--gold); }
     align-items: flex-start;
     gap: 10px;
     margin: 0 0 12px;
-    padding: 10px 12px;
+    padding: 7px 8px 7px 12px;
     border-radius: 12px;
     border: 1px solid var(--line-strong);
     background: rgba(201, 162, 74, 0.1);
-    font-size: 0.9rem;
-    line-height: 1.4;
+    font-size: 0.84rem;
+    line-height: 1.35;
   }
   .desktop-tip p { margin: 0; flex: 1; color: var(--text-soft); }
   .desktop-tip strong { color: var(--gold-soft); }
@@ -790,11 +818,47 @@ a { color: var(--gold); }
   .sidebar > * { width: min(var(--sidebar-w), 88vw); }
   .scrim { display: block; position: fixed; inset: var(--topbar-h) 0 0 0; z-index: 24; background: rgba(0, 0, 0, 0.45); }
   .main { padding: 12px 16px 24px; }
+  /* O livro inteiro cabe na largura: os dois testamentos à vista; a pinça dá o zoom. */
   .book-layers { max-width: none; }
-  .book-scroll { overflow-x: auto; margin: 0 -16px; padding: 0 16px 8px; }
-  .book-scroll .book-layers { min-width: 900px; }
-  .panel { top: auto; height: 78vh; width: 100%; border-left: 0; border-top: 1px solid var(--paper-edge); border-radius: 16px 16px 0 0; }
+  .book-scroll { margin: 0 -8px; }
   .legend-hint { display: none; }
+
+  /* Painel do capítulo como folha: meia tela (o livro fica visível acima) ou tela cheia. */
+  .panel {
+    top: auto;
+    height: 50dvh;
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid var(--paper-edge);
+    border-radius: 16px 16px 0 0;
+    transition: height 0.25s cubic-bezier(0.3, 0, 0.2, 1);
+  }
+  .panel.sheet-full { height: calc(100dvh - var(--topbar-h)); }
+  .sheet-handle {
+    display: grid;
+    place-items: center;
+    flex: none;
+    height: 22px;
+    border: 0;
+    background: none;
+    cursor: grab;
+    touch-action: none;
+  }
+  .sheet-handle span { width: 42px; height: 5px; border-radius: 3px; background: var(--paper-edge); }
+  .panel-head { padding: 0 18px 8px; }
+  .panel h2 { font-size: 1.6rem; }
+  .panel-tools { padding: 0 18px 8px; }
+  .panel-body { padding: 4px 18px 18px; }
+
+  /* Referências compactas: só a sigla; tocar mostra o texto (e destaca a linha no livro). */
+  .ref-list { display: flex; flex-wrap: wrap; gap: 6px; margin-left: 1.7em; }
+  .ref-item button { width: auto; padding: 4px 11px; border-radius: 999px; }
+  .ref-item .ref-text, .ref-item .ref-strength { display: none; }
+  .ref-item.picked { flex-basis: 100%; }
+  .ref-item.picked button { width: 100%; padding: 7px 11px; border-radius: 8px; }
+  .ref-item.picked .ref-text { display: block; }
+  .ref-item.picked .ref-strength { display: inline-block; }
+  .tap-card { bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

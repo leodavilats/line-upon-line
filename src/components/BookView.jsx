@@ -43,6 +43,7 @@ const TEXT_LINES = (() => {
 export const fmtRef = (b, ch, v, last = 0) => `${BOOKS[b].abbr} ${ch}:${v}${last ? `-${last}` : ''}`
 
 const MAGNET_PX = 14 // alcance mínimo do cursor até uma linha, em pixels de tela
+const TOUCH_MAGNET_PX = 22 // o dedo é menos preciso que o cursor
 const HYSTERESIS = 4 // unidades do desenho que outra linha precisa estar mais perto para roubar o destaque
 
 // Distância de um ponto até a polilinha [x0, y0, x1, y1, …] (segmento a segmento, não só aos vértices).
@@ -178,6 +179,16 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
   const [tHover, setTHover] = useState(null)
   // Livro (nível Bíblia) ou capítulo (nível livro) sob o cursor: realça as linhas que o tocam.
   const [spot, setSpot] = useState(null)
+  // No toque não há cursor: o primeiro toque seleciona e mostra um cartão com "Abrir".
+  const touch = useRef(false)
+  const pressing = useRef(false)
+  const [sel, setSel] = useState(null)
+
+  useEffect(() => {
+    setSel(null)
+    setSpot(null)
+    setTHover(null)
+  }, [focus, chapter])
 
   const target = useMemo(() => computeLayout(focus), [focus])
   const layout = useAnimatedLayout(target)
@@ -227,13 +238,20 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
     return { x: e.clientX - r.left, y: e.clientY - r.top }
   }
 
-  function findTissue({ clientX, clientY }) {
+  function toView({ clientX, clientY }) {
     const r = layersRef.current.getBoundingClientRect()
-    const vx = VIEW.x + ((clientX - r.left) / r.width) * VIEW.w
-    const vy = VIEW.y + ((clientY - r.top) / r.height) * VIEW.h
+    return {
+      vx: VIEW.x + ((clientX - r.left) / r.width) * VIEW.w,
+      vy: VIEW.y + ((clientY - r.top) / r.height) * VIEW.h,
+      scale: r.width / VIEW.w,
+    }
+  }
+
+  function findTissue(e, magnetPx = MAGNET_PX) {
+    const { vx, vy, scale } = toView(e)
     if (vy > BASELINE + 2) return null
-    // Ímã: alcance mínimo de MAGNET_PX na tela, seja qual for a espessura da linha.
-    const magnet = MAGNET_PX / (r.width / VIEW.w)
+    // Ímã: alcance mínimo de magnetPx na tela, seja qual for a espessura da linha.
+    const magnet = magnetPx / scale
     let best = null
     let bestD = Infinity
     let currentD = Infinity
@@ -279,23 +297,103 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
     setTip(null)
   }
 
-  function onPageClick() {
-    const item = tHover?.item
-    if (!item) return
-    clearHover()
+  function openTissue(item) {
     if (item.kind === 'pair') onFocus(BOOKS[item.near].id)
     else if (item.kind === 'chapter') onChapter(item.ch)
     else onPickRef(item.key)
   }
 
+  function onPageClick() {
+    const item = tHover?.item
+    if (!item || touch.current) return
+    clearHover()
+    openTissue(item)
+  }
+
+  const bookInfo = (b, i) => ({
+    title: b.pt,
+    line: `${b.chapters} capítulo${b.chapters > 1 ? 's' : ''} · ${nRefs(totals.books.get(i) ?? 0)}${focus ? ` com ${BOOK_BY_ID[focus].pt}` : ''}`,
+    hint: 'Clique para abrir o livro',
+  })
+  const chapterInfo = (c) => ({
+    title: `${focusLayout.pt} ${c}`,
+    line: chapter ? 'Clique para abrir' : nRefs(totals.chapters.get(c) ?? 0),
+    hint: c === chapter ? 'Clique para fechar o capítulo' : 'Clique para abrir o capítulo',
+  })
+
   function spotOn(e, next, info) {
+    if (touch.current) return
     clearHover()
     setSpot(next)
     setTip({ ...tipPos(e), ...info })
   }
   function spotOff() {
+    if (touch.current) return
     setSpot(null)
     setTip(null)
+  }
+
+  function clearSel() {
+    setSel(null)
+    setSpot(null)
+    setTHover(null)
+  }
+
+  // Toque: seleciona o livro, o capítulo ou a linha sob o dedo. Arrastar pela faixa de livros
+  // percorre os livros; tocar de novo no que já está selecionado abre.
+  function touchSelect(e, tap) {
+    const { vx, vy } = toView(e)
+    if (vy > BASELINE) {
+      if (vy > BASELINE + 60) return
+      let next, info, open
+      if (focusLayout && vx >= focusLayout.x && vx <= focusLayout.x + focusLayout.w) {
+        const c = Math.min(focusLayout.chapters, Math.max(1, Math.ceil(((vx - focusLayout.x) / focusLayout.w) * focusLayout.chapters)))
+        next = { kind: 'chapter', ch: c }
+        info = chapterInfo(c)
+        open = () => onChapter(c === chapter ? null : c)
+      } else {
+        const i = layout.findIndex((b) => vx >= b.x && vx < b.x + b.w)
+        if (i < 0 || layout[i].id === focus) return
+        next = { kind: 'book', b: i }
+        info = bookInfo(layout[i], i)
+        open = () => onFocus(layout[i].id)
+      }
+      if (tap && spot && spot.kind === next.kind && spot.b === next.b && spot.ch === next.ch) {
+        clearSel()
+        open()
+        return
+      }
+      setTHover(null)
+      setSpot(next)
+      setSel({ ...info, open })
+      return
+    }
+    const hit = findTissue(e, TOUCH_MAGNET_PX)
+    if (!hit) {
+      if (tap) clearSel()
+      return
+    }
+    if (hit.item.kind === 'verse') {
+      if (tap) {
+        clearSel()
+        onPickRef(hit.item.key)
+      }
+      return
+    }
+    setSpot(null)
+    setTHover(hit)
+    setSel({ ...tissueTip(hit.item, focus, strength), scope: hit.item.scope, open: () => openTissue(hit.item) })
+  }
+
+  function onPointerDown(e) {
+    touch.current = e.pointerType !== 'mouse'
+    if (!touch.current) return
+    pressing.current = true
+    touchSelect(e, true)
+  }
+  function onPointerMove(e) {
+    if (e.pointerType === 'mouse') onLayersMove(e)
+    else if (pressing.current) touchSelect(e, false)
   }
 
   const empty = status === 'ready' && tissue && tissue.items.length === 0
@@ -306,8 +404,11 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
         <div
           className={`book-layers ${tHover ? 'pointing' : ''}`}
           ref={layersRef}
-          onMouseMove={onLayersMove}
-          onMouseLeave={clearHover}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={() => (pressing.current = false)}
+          onPointerCancel={() => (pressing.current = false)}
+          onMouseLeave={() => touch.current || clearHover()}
         >
           {/* Camada 1: o livro */}
           <svg className="book-svg" viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`} role="img" aria-label="Bíblia aberta com as referências cruzadas desenhadas como arcos">
@@ -371,16 +472,11 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
                   key={b.id}
                   className={`book-hit ${spot?.kind === 'book' && spot.b === i ? 'on' : ''}`}
                   onClick={() => {
+                    if (touch.current) return
                     spotOff()
                     onFocus(b.id)
                   }}
-                  onMouseEnter={(e) =>
-                    spotOn(e, { kind: 'book', b: i }, {
-                      title: b.pt,
-                      line: `${b.chapters} capítulo${b.chapters > 1 ? 's' : ''} · ${nRefs(totals.books.get(i) ?? 0)}${focus ? ` com ${BOOK_BY_ID[focus].pt}` : ''}`,
-                      hint: 'Clique para abrir o livro',
-                    })
-                  }
+                  onMouseEnter={(e) => spotOn(e, { kind: 'book', b: i }, bookInfo(b, i))}
                   onMouseLeave={spotOff}
                 >
                   <rect x={b.x} y={BASELINE + 1} width={b.w} height="56" className="book-hit-area" />
@@ -406,16 +502,11 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
                       key={c}
                       className={`chapter ${c === chapter ? 'on' : ''} ${spot?.kind === 'chapter' && spot.ch === c ? 'hot' : ''}`}
                       onClick={() => {
+                        if (touch.current) return
                         spotOff()
                         onChapter(c === chapter ? null : c)
                       }}
-                      onMouseEnter={(e) =>
-                        spotOn(e, { kind: 'chapter', ch: c }, {
-                          title: `${focusLayout.pt} ${c}`,
-                          line: chapter ? 'Clique para abrir' : nRefs(totals.chapters.get(c) ?? 0),
-                          hint: c === chapter ? 'Clique para fechar o capítulo' : 'Clique para abrir o capítulo',
-                        })
-                      }
+                      onMouseEnter={(e) => spotOn(e, { kind: 'chapter', ch: c }, chapterInfo(c))}
                       onMouseLeave={spotOff}
                     >
                       <rect x={x} y={BASELINE + 1} width={cw} height="32" className="chapter-hit" />
@@ -499,6 +590,29 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
           <strong>{tip.title}</strong>
           <span className="tooltip-line">{tip.line}</span>
           <span className="tooltip-hint">{tip.hint}</span>
+        </div>
+      )}
+
+      {sel && (
+        <div className="tap-card" role="dialog" aria-label={sel.title}>
+          {sel.scope && <span className="dot" style={{ background: SCOPE_COLORS[sel.scope] }} />}
+          <div className="tap-card-text">
+            <strong>{sel.title}</strong>
+            <span>{sel.line}</span>
+          </div>
+          <button
+            className="btn"
+            onClick={() => {
+              const open = sel.open
+              clearSel()
+              open()
+            }}
+          >
+            Abrir
+          </button>
+          <button className="icon-btn" onClick={clearSel} aria-label="Fechar">
+            ✕
+          </button>
         </div>
       )}
     </div>

@@ -93,6 +93,9 @@ export default function ChapterPanel({
 }) {
   const bodyRef = useRef(null)
   const [onlyWithRefs, setOnlyWithRefs] = useState(false)
+  // No celular o painel é uma folha: meia tela (o livro aparece acima) ou tela cheia para ler.
+  const [full, setFull] = useState(false)
+  const dragY = useRef(null)
   const book = BOOK_BY_ID[focus]
   const text = useChapterText(focus, chapter)
 
@@ -115,7 +118,23 @@ export default function ChapterPanel({
   const verses = text.data ?? []
 
   return (
-    <aside className="panel" aria-label={`${book.pt} ${chapter}`}>
+    <aside className={`panel ${full ? 'sheet-full' : ''}`} aria-label={`${book.pt} ${chapter}`}>
+      {/* Alça da folha (só no celular): tocar alterna; arrastar para cima expande, para baixo recolhe ou fecha. */}
+      <button
+        className="sheet-handle"
+        aria-label={full ? 'Recolher o texto' : 'Expandir o texto'}
+        onPointerDown={(e) => (dragY.current = e.clientY)}
+        onPointerUp={(e) => {
+          const dy = dragY.current == null ? 0 : e.clientY - dragY.current
+          dragY.current = null
+          if (Math.abs(dy) < 8) setFull(!full)
+          else if (dy < 0) setFull(true)
+          else if (full) setFull(false)
+          else onClose()
+        }}
+      >
+        <span aria-hidden="true" />
+      </button>
       <header className="panel-head">
         <div>
           <span className="eyebrow">Capítulo</span>

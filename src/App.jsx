@@ -55,9 +55,8 @@ const TOUR_STEPS = [
   },
 ]
 
-// Em telas pequenas, recomenda o computador (o livro com todas as linhas fica bem mais legível).
-// Some ao fechar e não volta nesta aba.
-function DesktopTip() {
+// Em telas pequenas, uma dica de como usar o toque. Some sozinha ou ao fechar e não volta nesta aba.
+function TouchTip() {
   const [hidden, setHidden] = useState(() => {
     try {
       return sessionStorage.getItem('lsl-desktop-tip') === 'off'
@@ -65,23 +64,28 @@ function DesktopTip() {
       return false
     }
   })
+  const hide = () => {
+    setHidden(true)
+    try {
+      sessionStorage.setItem('lsl-desktop-tip', 'off')
+    } catch {}
+  }
+  useEffect(() => {
+    if (hidden) return
+    const t = setTimeout(hide, 9000)
+    return () => clearTimeout(t)
+  }, [hidden])
   if (hidden) return null
   return (
     <div className="desktop-tip" role="note">
-      <span aria-hidden="true">🖥</span>
       <p>
-        <strong>Melhor no computador.</strong> Numa tela maior, o livro aberto e as ligações entre as passagens ficam muito
-        mais fáceis de ver e de clicar.
+        <strong>Dica:</strong> toque num livro ou numa linha para ver os detalhes. Arraste pela base para percorrer os
+        livros.
       </p>
       <button
         className="icon-btn"
-        aria-label="Fechar recomendação"
-        onClick={() => {
-          setHidden(true)
-          try {
-            sessionStorage.setItem('lsl-desktop-tip', 'off')
-          } catch {}
-        }}
+        aria-label="Fechar dica"
+        onClick={hide}
       >
         ✕
       </button>
@@ -289,7 +293,7 @@ export default function App() {
         {sidebarOpen && <div className="scrim" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
 
         <main className="main">
-          <DesktopTip />
+          <TouchTip />
           <div className="main-head">
             <nav className="crumbs" aria-label="Nível de zoom">
               <button onClick={() => setFocus(null)} disabled={!focus}>
