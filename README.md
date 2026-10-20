@@ -91,4 +91,4 @@ O OpenBible usa a versificação da KJV, que coincide com a desta Almeida. Se um
 
 ---
 
-Desenvolvido por Leonardo D'avila (@oleodavila).
+Desenvolvido por Leonardo D'avila.
