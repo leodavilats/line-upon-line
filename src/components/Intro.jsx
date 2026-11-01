@@ -83,7 +83,7 @@ export function WelcomeModal({ onStartTour, onClose }) {
             </button>
           </div>
         </div>
-        <p className="modal-credit">Desenvolvido por Leonardo D'avila (@oleodavila)</p>
+        <p className="modal-credit">Desenvolvido por Leonardo D'avila</p>
       </div>
     </div>
   )
