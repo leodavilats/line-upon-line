@@ -184,7 +184,7 @@ export default function ChapterPanel({
           <h2>
             {book.pt} {chapter}
           </h2>
-          <p className="panel-sub">
+          <p className="panel-sub" aria-live="polite">
             {rowsStatus === 'ready'
               ? total
                 ? `${total.toLocaleString('pt-BR')} referência${total === 1 ? '' : 's'} em ${byVerse.size} versículo${byVerse.size === 1 ? '' : 's'} · ${tierLabel}`

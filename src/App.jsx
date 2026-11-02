@@ -387,7 +387,7 @@ export default function App() {
               )}
             </nav>
             {tissue && (
-              <p className="stats">
+              <p className="stats" aria-live="polite">
                 <strong>{fmt(tissue.refs)}</strong> referência{tissue.refs === 1 ? '' : 's'}
                 {level === 'book' ? ` com ${book.pt}` : level === 'chapter' ? ` em ${book.abbr} ${chapter}` : ''}
                 <span className="sep">·</span>

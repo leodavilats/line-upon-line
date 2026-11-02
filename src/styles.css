@@ -9,7 +9,9 @@
   --line-strong: rgba(120, 88, 40, 0.42);
   --text: #33241a;
   --text-soft: rgba(51, 36, 26, 0.78);
-  --text-faint: rgba(51, 36, 26, 0.6);
+  /* 0,7 mantém o tom "tênue" mas garante contraste AA (~4,8:1) do texto miúdo
+     — legenda, rodapé, subtítulo e placeholders — sobre o pergaminho. */
+  --text-faint: rgba(51, 36, 26, 0.7);
   --gold: #9a7329;
   --gold-soft: #74531a;
   --wash: rgba(255, 255, 255, 0.5);
@@ -51,6 +53,7 @@
   --panel-w: 460px;
   --serif-display: 'Cormorant Garamond', Georgia, serif;
   --serif: 'EB Garamond', Georgia, serif;
+  --ease: cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 * { box-sizing: border-box; }
@@ -76,9 +79,13 @@ a { color: var(--gold); }
   color: #21160f;
   font-weight: 600;
   cursor: pointer;
+  transition: filter 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s var(--ease),
+    border-color 0.15s var(--ease), transform 0.08s var(--ease);
 }
+.btn:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 3px 12px var(--shadow); }
+.btn:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
 .btn-ghost { background: transparent; color: inherit; border-color: currentColor; font-weight: 500; }
-.btn-ghost:hover:not(:disabled) { background: rgba(201, 162, 74, 0.14); }
+.btn-ghost:hover:not(:disabled) { background: rgba(201, 162, 74, 0.14); filter: none; box-shadow: none; }
 .btn:disabled { opacity: 0.35; cursor: default; }
 .icon-btn {
   flex: none;
@@ -91,8 +98,10 @@ a { color: var(--gold); }
   background: transparent;
   cursor: pointer;
   opacity: 0.7;
+  transition: opacity 0.15s var(--ease), background 0.15s var(--ease), transform 0.08s var(--ease);
 }
-.icon-btn:hover { opacity: 1; }
+.icon-btn:hover { opacity: 1; background: rgba(201, 162, 74, 0.14); }
+.icon-btn:active { transform: scale(0.92); }
 .link-btn {
   border: 0;
   background: none;
@@ -143,8 +152,10 @@ a { color: var(--gold); }
   border: 1px solid var(--line-strong);
   background: transparent;
   cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.08s var(--ease);
 }
 .filters-toggle:hover, .filters-toggle.on { background: rgba(201, 162, 74, 0.12); border-color: var(--gold); }
+.filters-toggle:active { transform: translateY(1px); }
 .count-badge {
   min-width: 20px;
   height: 20px;
@@ -267,6 +278,10 @@ a { color: var(--gold); }
   background: var(--gold-soft);
   border: 2px solid var(--bg);
 }
+/* Anel de foco no botão do controle (e não só no trilho inteiro) ao navegar por teclado. */
+.strength-range:focus-visible { outline: none; }
+.strength-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(201, 162, 74, 0.4); }
+.strength-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(201, 162, 74, 0.4); }
 .range-ticks { display: flex; justify-content: space-between; }
 .range-ticks button {
   padding: 2px 0;
@@ -308,8 +323,11 @@ a { color: var(--gold); }
   background: transparent;
   font-size: 0.85rem;
   cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease),
+    transform 0.08s var(--ease);
 }
-.preset:hover { border-color: var(--gold); }
+.preset:hover { border-color: var(--gold); background: rgba(201, 162, 74, 0.1); }
+.preset:active { transform: translateY(1px); }
 .preset.on { background: var(--gold); border-color: var(--gold); color: #21160f; font-weight: 600; }
 .group-picker { margin-top: 4px; }
 .mini-chips { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -321,6 +339,7 @@ a { color: var(--gold); }
   font-size: 0.8rem;
   color: var(--text-soft);
   cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
 }
 .mini-chips button:hover { border-color: var(--line-strong); color: var(--text); }
 .mini-chips button.on { background: rgba(201, 162, 74, 0.2); border-color: var(--gold); color: var(--gold-soft); }
@@ -400,7 +419,9 @@ a { color: var(--gold); }
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-color: rgba(201, 162, 74, 0.35);
+  transition: color 0.15s var(--ease), text-decoration-color 0.15s var(--ease);
 }
+.crumbs button:not(:disabled):hover { text-decoration-color: var(--gold); }
 .crumbs button:disabled { color: var(--gold-soft); text-decoration: none; cursor: default; }
 .stats { margin: 0; font-size: 0.92rem; color: var(--text-soft); }
 .stats strong { font-family: var(--serif-display); font-size: 1.25rem; color: var(--gold-soft); }
@@ -417,9 +438,11 @@ a { color: var(--gold); }
   background: rgba(201, 162, 74, 0.1);
   font-size: 0.86rem;
   cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.08s var(--ease);
 }
 .active-chip span { opacity: 0.6; font-size: 0.8em; }
-.active-chip:hover { border-color: var(--gold); }
+.active-chip:hover { border-color: var(--gold); background: rgba(201, 162, 74, 0.18); }
+.active-chip:active { transform: translateY(1px); }
 .active-chip:hover span { opacity: 1; }
 
 /* ───── O livro ───── */
@@ -892,7 +915,9 @@ a { color: var(--gold); }
     font-size: 0.9rem;
     line-height: 1.15;
     cursor: pointer;
+    transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.08s var(--ease);
   }
+  .book-grid button:active, .chapter-grid button:active { transform: scale(0.97); }
   .book-grid button { text-align: left; }
   .chapter-grid button {
     display: grid;
@@ -943,4 +968,6 @@ a { color: var(--gold); }
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar, .main, .panel { transition: none; animation: none; }
+  /* Sem movimento: modais, folha, cartões e destaque do tour aparecem sem deslizar. */
+  .modal-backdrop, .modal, .tap-card, .tour-spot, .tour-balloon, .book-layers, .book-svg { animation: none; transition: none; }
 }
