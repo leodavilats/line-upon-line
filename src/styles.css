@@ -772,8 +772,8 @@ a { color: var(--gold); }
 .tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--paper-edge); }
 .tour-dots i.on { background: var(--accent); }
 
-/* Dica de toque e recomendação de computador: só aparecem em telas pequenas */
-.desktop-tip, .modal-desktop-tip, .sheet-handle { display: none; }
+/* Dica de toque, recomendação de computador e navegação por listas: só em telas pequenas */
+.desktop-tip, .modal-desktop-tip, .sheet-handle, .mobile-nav { display: none; }
 
 /* Cartão da seleção por toque (substitui o balão do cursor) */
 .tap-card {
@@ -860,6 +860,48 @@ a { color: var(--gold); }
   .book-layers { max-width: none; }
   .book-scroll { margin: 0 -8px; }
   .legend-hint { display: none; }
+
+  /* Navegação por listas (livros e capítulos): o caminho confiável no toque. */
+  .mobile-nav { display: block; margin-top: 18px; }
+  .mnav-title {
+    margin: 0 0 10px;
+    font-size: 0.82rem;
+    font-style: italic;
+    color: var(--text-faint);
+    text-align: center;
+  }
+  .mnav-group { margin-bottom: 16px; }
+  .mnav-group h3 {
+    margin: 0 0 8px;
+    font-family: var(--serif-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(102px, 1fr)); gap: 6px; }
+  .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+  .book-grid button, .chapter-grid button {
+    min-height: 46px;
+    padding: 6px 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.15;
+    cursor: pointer;
+  }
+  .book-grid button { text-align: left; }
+  .chapter-grid button {
+    display: grid;
+    place-items: center;
+    font-family: var(--serif-display);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .book-grid button:active, .chapter-grid button:active { background: rgba(201, 162, 74, 0.2); border-color: var(--gold); }
 
   /* Painel do capítulo como folha: meia tela (o livro fica visível acima) ou tela cheia. */
   .panel {

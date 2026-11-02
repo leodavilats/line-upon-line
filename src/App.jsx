@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BookView, { SCOPE_COLORS } from './components/BookView.jsx'
 import ChapterPanel from './components/ChapterPanel.jsx'
 import { Tour, WelcomeModal, introWanted, markIntroShown } from './components/Intro.jsx'
+import MobileNav from './components/MobileNav.jsx'
 import SearchBox from './components/SearchBox.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import { BOOK_BY_ID } from './data/books.js'
@@ -26,6 +27,28 @@ import {
 const fmt = (n) => n.toLocaleString('pt-BR')
 const WIDE = 1100 // a barra lateral começa aberta a partir desta largura
 const ROOMY = 1700 // abaixo disso, abrir um capítulo recolhe a barra lateral
+
+// ───── Rotas no hash: /#/ISA (livro), /#/ISA/53 (capítulo), /#/ISA/53/5 (versículo) ─────
+// Hash (e não caminho) para funcionar sem configurar o servidor. Faz o "voltar" do navegador
+// e do Android subir um nível e permite compartilhar o link de uma passagem.
+function encodeRoute(focus, chapter, verse) {
+  if (!focus) return ''
+  let p = `/${focus}`
+  if (chapter) {
+    p += `/${chapter}`
+    if (verse) p += `/${verse}`
+  }
+  return p
+}
+
+function parseRoute() {
+  const [book, ch, v] = window.location.hash.replace(/^#\/?/, '').split('/')
+  if (!book || !BOOK_BY_ID[book]) return { book: null, chapter: null, verse: null }
+  const chapters = BOOK_BY_ID[book].chapters
+  const chapter = ch && Number(ch) >= 1 && Number(ch) <= chapters ? Number(ch) : null
+  const verse = chapter && Number(v) >= 1 ? Number(v) : null
+  return { book, chapter, verse }
+}
 
 const TOUR_STEPS = [
   {
@@ -79,8 +102,8 @@ function TouchTip() {
   return (
     <div className="desktop-tip" role="note">
       <p>
-        <strong>Dica:</strong> toque num livro ou numa linha para ver os detalhes. Arraste pela base para percorrer os
-        livros.
+        <strong>Dica:</strong> use as listas abaixo para abrir um livro ou capítulo. No desenho, toque numa linha ou num
+        livro para ver os detalhes.
       </p>
       <button
         className="icon-btn"
@@ -139,11 +162,12 @@ function ActiveChips({ filters, setFilters, tiers, onReset }) {
 }
 
 export default function App() {
-  const [filters, setFilters] = useState(DEFAULT_FILTERS)
+  const route0 = useRef(parseRoute()).current // rota do primeiro carregamento (deep link)
+  const [filters, setFilters] = useState(() => ({ ...DEFAULT_FILTERS, focus: route0.book }))
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= WIDE)
   const autoClosed = useRef(false)
   // O capítulo guarda o livro a que pertence: trocar de livro volta naturalmente ao nível do livro.
-  const [nav, setNav] = useState({ book: null, chapter: null, verse: null })
+  const [nav, setNav] = useState({ book: route0.book, chapter: route0.chapter, verse: route0.verse })
   const [pickedRef, setPickedRef] = useState(null)
   // Introdução: 'welcome' (modal), 'tour' (passos sobre a tela) ou null.
   const [intro, setIntro] = useState(() => (introWanted() ? 'welcome' : null))
@@ -166,6 +190,32 @@ export default function App() {
 
   const focus = filters.focus
   const chapter = focus && nav.book === focus ? nav.chapter : null
+  const verse = chapter ? nav.verse : null
+
+  // Estado → URL: cada nível vira uma entrada no histórico, então "voltar" sobe um nível.
+  useEffect(() => {
+    const path = encodeRoute(focus, chapter, verse)
+    const current = window.location.hash.replace(/^#/, '')
+    if (path === current) return
+    const url = path ? `#${path}` : window.location.pathname + window.location.search
+    window.history.pushState(null, '', url)
+  }, [focus, chapter, verse])
+
+  // URL → estado: botão "voltar"/"avançar" do navegador (e do Android).
+  useEffect(() => {
+    function onPop() {
+      const r = parseRoute()
+      setFilters((f) => (f.focus === r.book ? f : { ...f, focus: r.book }))
+      setNav({ book: r.book, chapter: r.chapter, verse: r.verse })
+      setPickedRef(null)
+    }
+    window.addEventListener('popstate', onPop)
+    window.addEventListener('hashchange', onPop)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      window.removeEventListener('hashchange', onPop)
+    }
+  }, [])
 
   const overview = useAsync(() => loadXrefs(), [])
   const data = overview.data
@@ -205,7 +255,9 @@ export default function App() {
   const { tissue, ghost, status } = useMemo(() => {
     if (overview.status !== 'ready') return { tissue: null, ghost: null, status: overview.status }
     if (!focus) return { tissue: overviewTissue(data, filters), ghost: null, status: 'ready' }
-    if (!rows) return { tissue: null, ghost: null, status: bookRows.status }
+    // Enquanto o arquivo do livro carrega, mostra os arcos livro↔livro do foco (já em memória,
+    // vindos de xref-books.json) em vez de uma tela vazia. overviewTissue já filtra pelo foco.
+    if (!rows) return { tissue: overviewTissue(data, filters), ghost: null, status: bookRows.status }
     const book = bookTissue(rows, filters, minVotes, posIn)
     if (!chapter) return { tissue: book, ghost: null, status: 'ready' }
     return { tissue: chapterTissue(rows, filters, minVotes, chapter, posIn), ghost: book, status: 'ready' }
@@ -361,6 +413,8 @@ export default function App() {
             onPickRef={setPickedRef}
             onReset={resetFilters}
           />
+
+          {!chapter && <MobileNav focus={focus} onFocus={setFocus} onChapter={(ch) => openChapter(ch)} />}
 
           <div className="legend">
             <div className="legend-colors">

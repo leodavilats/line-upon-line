@@ -52,8 +52,8 @@ export function WelcomeModal({ onStartTour, onClose }) {
           ligações entre passagens que tratam do mesmo tema, como arcos entre as páginas de uma Bíblia aberta.
         </p>
         <p className="modal-desktop-tip">
-          <strong>Dica:</strong> para a melhor experiência, acesse pelo computador. Numa tela maior, o livro e as ligações
-          ficam muito mais fáceis de ver e de clicar.
+          <strong>Dica:</strong> use as listas de livros e capítulos para navegar. A teia de arcos entre as páginas fica
+          ainda mais bonita numa tela maior, quando puder.
         </p>
         <ul className="features">
           <li>

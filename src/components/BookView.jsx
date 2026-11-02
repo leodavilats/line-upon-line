@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BOOKS, BOOK_BY_ID } from '../data/books.js'
+import { loadBookXrefs } from '../lib/data.js'
 import {
   BASELINE,
   VIEW,
@@ -96,18 +97,22 @@ function useAnimatedLayout(target) {
   return layout
 }
 
-function TissueCanvas({ tissue, ghost, layout, dimmed }) {
+// memo: só redesenha quando o tecido, o fantasma ou o layout mudam — não a cada
+// movimento do cursor (que renderiza o BookView para o balão, mas não altera os arcos).
+const TissueCanvas = memo(function TissueCanvas({ tissue, ghost, layout, dimmed }) {
   const ref = useRef(null)
-  const drawRef = useRef(null)
 
-  drawRef.current = () => {
+  const draw = useCallback(() => {
     const canvas = ref.current
     const width = canvas?.clientWidth
     if (!width) return
     const dpr = window.devicePixelRatio || 1
     const scale = width / VIEW.w
-    canvas.width = Math.round(width * dpr)
-    canvas.height = Math.round(VIEW.h * scale * dpr)
+    const w = Math.round(width * dpr)
+    const h = Math.round(VIEW.h * scale * dpr)
+    // Reatribuir width/height realoca o buffer e limpa o canvas; só faça se o tamanho mudou.
+    if (canvas.width !== w) canvas.width = w
+    if (canvas.height !== h) canvas.height = h
     const ctx = canvas.getContext('2d')
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, -VIEW.x * scale * dpr, -VIEW.y * scale * dpr)
     ctx.clearRect(VIEW.x, VIEW.y, VIEW.w, VIEW.h)
@@ -115,13 +120,13 @@ function TissueCanvas({ tissue, ghost, layout, dimmed }) {
     const stroke = (item, color, alpha, lw) => {
       const x1 = xAt(layout, item.a)
       const x2 = xAt(layout, item.z)
-      const h = arcHeight(x1, x2)
+      const ah = arcHeight(x1, x2)
       ctx.globalAlpha = alpha
       ctx.lineWidth = lw
       ctx.strokeStyle = color
       ctx.beginPath()
       ctx.moveTo(x1, BASELINE)
-      ctx.bezierCurveTo(x1, BASELINE - h, x2, BASELINE - h, x2, BASELINE)
+      ctx.bezierCurveTo(x1, BASELINE - ah, x2, BASELINE - ah, x2, BASELINE)
       ctx.stroke()
     }
     if (ghost) for (const item of ghost.items) stroke(item, GHOST_COLOR, 0.07, 0.6 + 2 * Math.sqrt(item.count / ghost.max))
@@ -131,18 +136,20 @@ function TissueCanvas({ tissue, ghost, layout, dimmed }) {
         stroke(item, SCOPE_COLORS[item.scope], alpha, lw)
       }
     }
-  }
-
-  useEffect(() => drawRef.current())
+  }, [tissue, ghost, layout])
 
   useEffect(() => {
-    const ro = new ResizeObserver(() => drawRef.current())
+    draw()
+  }, [draw])
+
+  useEffect(() => {
+    const ro = new ResizeObserver(() => draw())
     ro.observe(ref.current)
     return () => ro.disconnect()
-  }, [])
+  }, [draw])
 
   return <canvas ref={ref} className={`xref-canvas ${dimmed ? 'dimmed' : ''}`} aria-hidden="true" />
-}
+})
 
 const nRefs = (k) => `${k.toLocaleString('pt-BR')} referência${k === 1 ? '' : 's'}`
 
@@ -198,14 +205,17 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
     return shown
   }, [target, focus])
 
+  // Amostras para detectar o arco sob o cursor. Usa o layout de destino (estável), e não o
+  // layout animado: evita recalcular ~25 pontos por arco em cada quadro da animação de zoom
+  // (milhares de arcos em livros grandes). Em repouso, layout === target, então nada muda.
   const samples = useMemo(
     () =>
       tissue?.items.map((item) => {
-        const x1 = xAt(layout, item.a)
-        const x2 = xAt(layout, item.z)
+        const x1 = xAt(target, item.a)
+        const x2 = xAt(target, item.z)
         return { item, x1, x2, pts: sampleArc(x1, x2), reach: 5 + tissueStyle(item, tissue).width / 2 }
       }) ?? [],
-    [tissue, layout],
+    [tissue, target],
   )
 
   // Totais por livro / capítulo, para os balões dos rótulos.
@@ -286,6 +296,7 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
     cancelAnimationFrame(frame.current)
     frame.current = requestAnimationFrame(() => {
       const hit = findTissue({ clientX, clientY })
+      if (hit?.item.kind === 'pair') loadBookXrefs(BOOKS[hit.item.near].id) // prefetch do livro de destino
       setTHover(hit)
       setTip(hit ? { ...pos, ...tissueTip(hit.item, focus, strength), scope: hit.item.scope } : null)
     })
@@ -397,6 +408,8 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
   }
 
   const empty = status === 'ready' && tissue && tissue.items.length === 0
+  // Só cobre com "Carregando…" quando ainda não há arcos de prévia desenhados.
+  const loading = status === 'loading' && (!tissue || tissue.items.length === 0)
 
   return (
     <div className="book" ref={wrapRef}>
@@ -476,7 +489,10 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
                     spotOff()
                     onFocus(b.id)
                   }}
-                  onMouseEnter={(e) => spotOn(e, { kind: 'book', b: i }, bookInfo(b, i))}
+                  onMouseEnter={(e) => {
+                    loadBookXrefs(b.id) // prefetch: o arquivo já está chegando quando o usuário clica
+                    spotOn(e, { kind: 'book', b: i }, bookInfo(b, i))
+                  }}
                   onMouseLeave={spotOff}
                 >
                   <rect x={b.x} y={BASELINE + 1} width={b.w} height="56" className="book-hit-area" />
@@ -564,9 +580,9 @@ export default function BookView({ tissue, ghost, status, strength, focus, chapt
             )}
           </svg>
 
-          {(status === 'loading' || empty) && (
+          {(loading || empty) && (
             <div className="book-message" role="status">
-              {status === 'loading' ? (
+              {loading ? (
                 <p>Carregando referências…</p>
               ) : (
                 <>

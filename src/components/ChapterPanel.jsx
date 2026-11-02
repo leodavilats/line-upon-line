@@ -9,8 +9,30 @@ const PREVIEW = 4
 
 function RefItem({ row, focusIdx, picked, strength, onPick }) {
   const [, , ob, och, ov, last, votes] = row
-  const text = useChapterText(BOOKS[ob].id, och)
   const ref = useRef(null)
+  const [near, setNear] = useState(false)
+  // No celular o texto fica oculto até o item ser aberto. Em qualquer tela, só busca quando
+  // o item está perto da viewport — assim abrir um capítulo não dispara dezenas de requisições.
+  const [coarse] = useState(() => window.matchMedia?.('(max-width: 899px)').matches ?? false)
+  const wantText = picked || (!coarse && near)
+  const text = useChapterText(wantText ? BOOKS[ob].id : null, wantText ? och : null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || near) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true)
+          io.disconnect()
+        }
+      },
+      { rootMargin: '300px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [near])
+
   useEffect(() => {
     if (picked) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [picked])
@@ -93,9 +115,25 @@ export default function ChapterPanel({
 }) {
   const bodyRef = useRef(null)
   const [onlyWithRefs, setOnlyWithRefs] = useState(false)
-  // No celular o painel é uma folha: meia tela (o livro aparece acima) ou tela cheia para ler.
-  const [full, setFull] = useState(false)
+  // No celular o painel é uma folha: começa em tela cheia para ler (o usuário já escolheu o
+  // capítulo); a alça recolhe para meia tela, deixando o livro à vista acima.
+  const [full, setFull] = useState(() => window.matchMedia?.('(max-width: 899px)').matches ?? false)
   const dragY = useRef(null)
+  const swipe = useRef(null)
+
+  // Deslizar na horizontal troca de capítulo; o movimento vertical continua sendo rolagem.
+  function onSwipeStart(e) {
+    swipe.current = e.pointerType === 'mouse' ? null : { x: e.clientX, y: e.clientY }
+  }
+  function onSwipeEnd(e) {
+    const s = swipe.current
+    swipe.current = null
+    if (!s) return
+    const dx = e.clientX - s.x
+    const dy = e.clientY - s.y
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8) return
+    onChapter(chapter + (dx < 0 ? 1 : -1))
+  }
   const book = BOOK_BY_ID[focus]
   const text = useChapterText(focus, chapter)
 
@@ -118,7 +156,12 @@ export default function ChapterPanel({
   const verses = text.data ?? []
 
   return (
-    <aside className={`panel ${full ? 'sheet-full' : ''}`} aria-label={`${book.pt} ${chapter}`}>
+    <aside
+      className={`panel ${full ? 'sheet-full' : ''}`}
+      aria-label={`${book.pt} ${chapter}`}
+      onPointerDown={onSwipeStart}
+      onPointerUp={onSwipeEnd}
+    >
       {/* Alça da folha (só no celular): tocar alterna; arrastar para cima expande, para baixo recolhe ou fecha. */}
       <button
         className="sheet-handle"
